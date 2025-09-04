@@ -56,7 +56,7 @@ export default async function handler(
 
 
     // --- 5. メール送信処理 ---
-    const transporter: Transporter = nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
       // SMTPサーバーの設定（例: Gmail）
       host: 'smtp.gmail.com',
       port: 587,
