@@ -1,7 +1,3 @@
-import axios from 'axios';
-import Link from 'next/link';
-import React from 'react';
-import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 
 
 

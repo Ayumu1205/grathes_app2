@@ -5,9 +5,6 @@ import useSWR from 'swr'
 import Loading from '../../components/UiParts'
 import { fetcher } from '../utils'
 
-type Section = { id: number; title: string }
-type Chapter = { id: number; title: string; sections: Section[] }
-type Thesis = { id: number; title: string; chapters: Chapter[] }
 
 export default function ThesisPage() {
   const router = useRouter()

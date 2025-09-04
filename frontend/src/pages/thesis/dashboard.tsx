@@ -1,35 +1,50 @@
 import Link from 'next/link';
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect } from 'react';
 import { FiFilePlus } from 'react-icons/fi';
 import useSWR from 'swr';
-import { fetcher } from '../utils'; // パスは実際の環境に合わせてください
-import { ClockIcon, ListCheckIcon, ImagePlusIcon, ChevronDownIcon, DocumentTextIcon, Loading } from '@/components/UiParts'; // パスは実際の環境に合わせてください
+import { fetcher } from '../utils'; 
+import { ClockIcon, ListCheckIcon, ImagePlusIcon, DocumentTextIcon, Loading, ArrowRightIcon } from '@/components/UiParts'; // ★ ChevronDownIconをimportから削除
 
-// --- アイコンコンポーネント (UiPartsにない場合) ---
-const ArrowRightIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-  </svg>
-);
+interface Thesis {
+  id: number;
+  title: string;
+  wordCount: number | null;
+  targetWordCount: number | null;
+  deadline: string | null;
+  updatedAt: string;
+  todoText: string | null;
+  imagePlanList: {
+    id: number;
+    done: boolean;
+    location: string;
+    description: string;
+  }[];
+}
 
-/**
- * ダッシュボードページ
- */
-export default function Dashboard() {
+interface ApiResponse {
+  allThesis: Thesis[];
+}
+
+
+
+export default function DashboarFexpad() {
   const url = '/api/thesis'; // APIのURLは環境に合わせて調整してください
 
-  const { data, error, isLoading } = useSWR(url, fetcher);
+  const { data, error, isLoading } = useSWR<ApiResponse>(url, fetcher);
 
-  const [expandedStates, setExpandedStates] = useState({});
+  const [expandedStates, setExpandedStates] = useState<{ [key: number]: string | null }>({});
 
-  const handleToggleSection = (thesisId, section) => {
+  const [countdown, setCountdown] = useState<{ [key: number]: number }>({})
+
+  // ★ 型を定義したので、この関数はエラーなく動作するようになります
+  const handleToggleSection = (thesisId: number, section: string) => {
     setExpandedStates(prev => ({
       ...prev,
       [thesisId]: prev[thesisId] === section ? null : section,
     }));
   };
 
-  const [countdown, setCountdown] = useState({});
+
 
   useEffect(() => {
     if (!data?.allThesis) return;
@@ -51,7 +66,7 @@ export default function Dashboard() {
   }, [data]);
 
 
-  if (error) return <div>データ取得エラー</div>
+  if (error) return <div>{error}</div>
   if (isLoading) return <Loading />
 
   const theses = data?.allThesis ?? []
@@ -110,7 +125,12 @@ export default function Dashboard() {
                     <button onClick={() => handleToggleSection(id, 'todo')} className="w-full flex items-center text-sm text-gray-600 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                       <ListCheckIcon />
                       <span>残りのToDo: <span className="font-bold text-gray-800">{todoCount}</span> 件</span>
-                      <span className="ml-auto"><ChevronDownIcon expanded={expandedSection === 'todo'} /></span>
+                      <span className="ml-auto">
+                        
+                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${expandedSection === 'todo' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                        </span>
                     </button>
                     <div className={`grid transition-all duration-500 ease-in-out ${expandedSection === 'todo' ? 'grid-rows-[1fr] pt-2' : 'grid-rows-[0fr]'}`}>
                       <div className="overflow-hidden">
@@ -126,7 +146,12 @@ export default function Dashboard() {
                     <button onClick={() => handleToggleSection(id, 'imagePlan')} className="w-full flex items-center text-sm text-gray-600 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                       <ImagePlusIcon />
                       <span>画像/データ挿入: <span className="font-bold text-gray-800">{imagePlanCount}</span> 件</span>
-                      <span className="ml-auto"><ChevronDownIcon expanded={expandedSection === 'imagePlan'} /></span>
+                      <span className="ml-auto">
+                        
+                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${expandedSection === 'imagePlan' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                        </span>
                     </button>
                     <div className={`grid transition-all duration-500 ease-in-out ${expandedSection === 'imagePlan' ? 'grid-rows-[1fr] pt-2' : 'grid-rows-[0fr]'}`}>
                       <div className="overflow-hidden">
@@ -150,7 +175,6 @@ export default function Dashboard() {
                     <DocumentTextIcon />
                     <span>{currentWordCount.toLocaleString()} / {safeTargetWordCount.toLocaleString()} 字</span>
                   </div>
-                  {/* ★★★ 修正箇所 ★★★ */}
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center font-medium">
                       <ClockIcon />
@@ -160,11 +184,12 @@ export default function Dashboard() {
                         <span className="text-gray-500">提出日情報なし</span>
                       )}
                     </div>
-                    <Link href={`/thesis/${id}`} passHref legacyBehavior>
-                      <a className="flex items-center text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors">
-                        詳細を見る
-                        <ArrowRightIcon />
-                      </a>
+                    <Link
+                      href={`/thesis/${id}`}
+                      className="flex items-center text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      詳細を見る
+                      <ArrowRightIcon />
                     </Link>
                   </div>
                 </div>
@@ -175,12 +200,12 @@ export default function Dashboard() {
           <p className="text-center text-gray-500">作成された論文はありません。</p>
         )}
 
-        <a href="/thesis/test" className="block">
+        <Link href="/thesis/test" className="block">
           <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 w-full max-w-2xl mx-auto text-gray-400 hover:bg-gray-100 hover:border-gray-400 transition-colors flex flex-col items-center justify-center h-[288px]">
             <FiFilePlus className="h-8 w-8" />
             <span className="mt-2 font-semibold">新規論文作成</span>
           </div>
-        </a>
+        </Link>
       </div>
     </div>
   );

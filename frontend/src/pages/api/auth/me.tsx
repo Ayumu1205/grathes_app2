@@ -31,16 +31,20 @@ export default async function handler(
     // トークン内のユーザーIDを使って、DBからユーザー情報を取得
     const user = await prisma.user.findUnique({
       where: { id: Number(payload.sub) },
+      select: {
+        id: true,
+        email: true,
+       
+  
+      },
     });
 
     if (!user) {
       return res.status(401).json({ message: 'User not found' });
     }
 
-    // パスワードは返却しない
-    const { password, ...userWithoutPassword } = user;
-
-    res.status(200).json(userWithoutPassword);
+    // 既にパスワードは除外されているため、そのまま返却できます
+    res.status(200).json(user);
 
   } catch (err) {
     console.error('Authentication error:', err);

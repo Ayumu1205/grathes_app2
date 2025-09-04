@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useState, useEffect } from 'react';
+import  { useState } from 'react';
 import useSWR from 'swr';
 
 // --- ダミーのコンポーネントと関数 (本来は外部ファイルから読み込みます) ---

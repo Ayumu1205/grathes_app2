@@ -1,3 +1,5 @@
+import type { NextPage, NextPageContext } from 'next';
+import Link from 'next/link';
 import React from 'react';
 
 // --- アイコンコンポーネント ---
@@ -13,8 +15,13 @@ const HomeIcon = () => (
   </svg>
 );
 
-// エラーページの本体
-const ErrorPage = ({ statusCode }) => {
+// ★ ページが受け取るpropsの型を定義
+interface ErrorPageProps {
+  statusCode?: number;
+}
+
+// ★ コンポーネントの型をNextPageとし、propsの型を適用
+const ErrorPage: NextPage<ErrorPageProps> = ({ statusCode }) => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center text-center p-4">
       <div className="w-full max-w-md">
@@ -28,18 +35,18 @@ const ErrorPage = ({ statusCode }) => {
           申し訳ございません。予期せぬエラーが発生しました。
           問題が解決しない場合は、管理者にお問い合わせください。
         </p>
-        {/* ★ 修正点: Next.jsのLinkコンポーネントを標準のaタグに変更 */}
-        <a href="/" className="inline-flex items-center px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition-colors">
+        {/* ★ Next.js 13以降ではLinkにaタグは不要です */}
+        <Link href="/" className="inline-flex items-center px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition-colors">
           <HomeIcon />
           ホームに戻る
-        </a>
+        </Link>
       </div>
     </div>
   );
 };
 
-// Next.jsがこのコンポーネントにステータスコードを渡すための設定
-ErrorPage.getInitialProps = ({ res, err }) => {
+// ★ getInitialPropsの引数にNextPageContextの型を適用
+ErrorPage.getInitialProps = ({ res, err }: NextPageContext): ErrorPageProps => {
   const statusCode = res ? res.statusCode : err ? err.statusCode : 404;
   return { statusCode };
 };

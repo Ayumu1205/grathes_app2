@@ -9,7 +9,7 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'your-default-super-secret-key-for-development'
 );
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  //GETメソッド　論文データ全て取ってくる
+  //GETメソッド 論文データ全て取ってくる
   if (req.method === 'GET') {
     try {
       // 1. ブラウザから自動で送られてきたクッキーを取得

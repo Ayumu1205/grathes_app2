@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React from 'react';
 
 // --- アイコンコンポーネント ---
@@ -17,10 +18,10 @@ export default function Custom404Page() {
           お探しのページは移動または削除されたか、URLが間違っている可能性があります。
         </p>
         {/* ★ 修正点: Next.jsのLinkコンポーネントを標準のaタグに変更 */}
-        <a href="/" className="inline-flex items-center px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition-colors">
+        <Link href="/" className="inline-flex items-center px-6 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition-colors">
           <HomeIcon />
           ホームに戻る
-        </a>
+        </Link>
       </div>
     </div>
   );

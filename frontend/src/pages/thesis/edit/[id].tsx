@@ -364,17 +364,6 @@ export default function ThesisEditPage() {
     const { id } = router.query
 
 
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const pathParts = window.location.pathname.split('/');
-      const currentId = pathParts[pathParts.length - 1];
-      if (!isNaN(parseInt(currentId))) {
-        setId(currentId);
-      }
-    }
-  }, []);
-
   const { data: thesisData, error, isLoading } = useSWR(id ? `/api/thesis/${id}` : null, fetcher);
 
   // --- States ---
