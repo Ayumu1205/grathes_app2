@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link'
 import useSWR from 'swr';
-import { fetcher } from '@/pages/utils';
+import { fetcher } from '@/utils';
 
 const Header = () => {
   // ★ APIを叩いて、現在のユーザー情報を取得

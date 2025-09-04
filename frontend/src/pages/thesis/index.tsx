@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FiFilePlus } from 'react-icons/fi'
 import useSWR from 'swr'
-import { fetcher } from '../utils'
+import { fetcher } from '../../utils'
 import { Loading } from '@/components/UiParts'
 
 type ThesisProps = {

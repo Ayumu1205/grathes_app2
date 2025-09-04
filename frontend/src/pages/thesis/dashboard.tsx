@@ -2,7 +2,7 @@ import Link from 'next/link';
 import React, {useState, useEffect } from 'react';
 import { FiFilePlus } from 'react-icons/fi';
 import useSWR from 'swr';
-import { fetcher } from '../utils'; 
+import { fetcher } from '../../utils'; 
 import { ClockIcon, ListCheckIcon, ImagePlusIcon, DocumentTextIcon, Loading, ArrowRightIcon } from '@/components/UiParts'; // ★ ChevronDownIconをimportから削除
 
 interface Thesis {

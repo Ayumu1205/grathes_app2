@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import {Loading, ChecklistIcon,ArrowLeftIcon,PencilIcon ,ImageIcon } from "../../components/UiParts"
-import { fetcher } from '@/pages/utils'; // パスは実際の環境に合わせてください
+import { fetcher } from '@/utils'; // パスは実際の環境に合わせてください
 
 
 

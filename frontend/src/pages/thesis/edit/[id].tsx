@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useState, useRef, useEffect , useMemo } from 'react';
 import useSWR from 'swr';
-import { fetcher } from '@/pages/utils';
+import { fetcher } from '@/utils';
 import { TrashIcon, PlusIcon, SendIcon, ChecklistIcon, ImageIcon, GearIcon,Loading } from "../../../components/UiParts"
 
 interface ChapterState { title: string; description: string; sections: string[]; sectionDescriptions: string[]; }
