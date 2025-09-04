@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique // メールアドレス（重複不可）
+  password  String   // ハッシュ化されたパスワード
+  emailVerified DateTime? // ★ メール認証が完了した日時
+  // ユーザーが作成した論文との関連付け (1対多)
+  theses    Thesis[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+// ★★★ 有効化トークンを保存するための新しいモデルを追加 ★★★
+model VerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  password  String   // ハッシュ化されたパスワードを一時的に保存
+  expires   DateTime
+}
+
+model Thesis {
+  id        Int       @id @default(autoincrement())
+  title     String
+  chapters  Chapter[]
+  references Reference[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  todoText      String?   @db.Text
+  imagePlanList ImagePlan[]
+  wordCountWeight Int          @default(70)  
+  wordCount       Int          @default(0)     // 現在の文字数
+  targetWordCount Int?                          // 目標文字数
+  deadline        DateTime?  
+  
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+}
+
+model Chapter {
+  id        Int       @id @default(autoincrement())
+  title     String
+  description String  @db.Text
+  progress    Int       @default(0)
+  thesisId  Int
+  thesis    Thesis    @relation(fields: [thesisId], references: [id], onDelete: Cascade)
+  sections  Section[]
+}
+
+model Section {
+  id        Int       @id @default(autoincrement())
+  title     String
+  description String  @db.Text
+  chapterId Int
+  chapter   Chapter   @relation(fields: [chapterId], references: [id],onDelete: Cascade)
+}
+
+model Reference {
+  id       Int        @id @default(autoincrement())
+  url      String
+  title    String
+  thesisId Int
+  thesis   Thesis     @relation(fields: [thesisId], references: [id],onDelete: Cascade)
+}
+
+model ImagePlan {
+  id          Int     @id @default(autoincrement())
+  done        Boolean @default(false)
+  location    String  // 例: "1-0" や "references"
+  description String
+
+  // Thesisモデルとの関連付け
+  thesisId    Int
+  thesis      Thesis  @relation(fields: [thesisId], references: [id], onDelete: Cascade)
+}
