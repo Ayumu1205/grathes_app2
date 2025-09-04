@@ -2,9 +2,24 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FiFilePlus } from 'react-icons/fi'
 import useSWR from 'swr'
-import Loading from '../../components/UiParts'
 import { fetcher } from '../utils'
+import { Loading } from '@/components/UiParts'
 
+type ThesisProps = {
+  id: number;
+  title: string;
+  chapters:[]
+}
+type ChapterProps = {
+  id: number;
+  title: string;
+  sections:[]
+}
+type SectionProps = {
+  id: number;
+  title: string;
+  
+}
 
 export default function ThesisPage() {
   const router = useRouter()
@@ -40,7 +55,7 @@ export default function ThesisPage() {
       </p>
 
       <div className="flex flex-wrap justify-center gap-8 w-full">
-        {theses.map((thesis) => (
+        {theses.map((thesis: ThesisProps) => (
           <div
             key={thesis.id}
             className="relative bg-white rounded-2xl shadow-md p-8 max-w-md w-full h-[600px] hover:shadow-xl transition-shadow duration-300 flex flex-col"
@@ -54,14 +69,14 @@ export default function ThesisPage() {
 
             <div className="flex-1 overflow-hidden relative z-0">
               <h2 className="text-xl font-bold text-center mb-8">{thesis.title}</h2>
-              {thesis.chapters.map((chapter, idx) => (
+              {thesis.chapters.map((chapter: ChapterProps, idx) => (
                 <div key={idx} className="mb-6">
                   <h3 className="text-lg font-semibold mb-2">
                     第{idx + 1}章 {chapter.title}
                   </h3>
                   {chapter.sections.length > 0 ? (
                     <ul className="space-y-1 pl-4">
-                      {chapter.sections.map((section, sidx) => (
+                      {chapter.sections.map((section: SectionProps, sidx) => (
                         <li key={sidx} className="text-gray-600">
                           {idx + 1}.{sidx + 1} {section.title}
                         </li>

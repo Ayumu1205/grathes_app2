@@ -36,7 +36,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.5.0",
+    "@types/bcrypt": "^6.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.19.11",
+    "@types/nodemailer": "^7.0.1",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "daisyui": "^4.12.10",

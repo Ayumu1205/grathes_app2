@@ -54,12 +54,13 @@ export default async function handler(
 
     res.setHeader('Set-Cookie', cookie);
 
-    // ★★★ ここからが修正箇所 ★★★
-    // 1. userオブジェクトのコピーを作成
-    const userWithoutPassword = { ...user };
-    // 2. コピーからpasswordプロパティを削除
-    delete userWithoutPassword.password;
-    // ★★★ 修正ここまで ★★★
+    const userWithoutPassword = {
+      id: user.id,
+      email: user.email,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      emailVerified: user.emailVerified
+    };
 
     res.status(200).json({ message: 'ログインに成功しました。', user: userWithoutPassword });
 
