@@ -4,6 +4,7 @@ import { FiFilePlus } from 'react-icons/fi';
 import useSWR from 'swr';
 import { fetcher } from '../../utils'; 
 import { ClockIcon, ListCheckIcon, ImagePlusIcon, DocumentTextIcon, Loading, ArrowRightIcon } from '@/components/UiParts'; // ★ ChevronDownIconをimportから削除
+import { useRouter } from 'next/router';
 
 interface Thesis {
   id: number;
@@ -28,6 +29,7 @@ interface ApiResponse {
 
 
 export default function DashboarFexpad() {
+  const router = useRouter()
   const url = '/api/thesis'; // APIのURLは環境に合わせて調整してください
 
   const { data, error, isLoading, mutate } = useSWR<ApiResponse>(url, fetcher);
@@ -201,7 +203,7 @@ export default function DashboarFexpad() {
                       try {
                         await fetch(`/api/thesis/${id}`, { method: 'DELETE' });
                         // SWRのキャッシュを更新して画面を再描画
-                        mutate('/api/thesis');
+                        router.push('/thesis/dashboard');
                       } catch (err) {
                         console.error(err);
                         alert('削除に失敗しました');

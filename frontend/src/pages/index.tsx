@@ -1,3 +1,6 @@
+import Image from "next/image"
+import Link from "next/link"
+
 export default function Home() {
   return (
     <>
@@ -19,7 +22,7 @@ export default function Home() {
         {/* コンテンツ */}
         <div className="relative z-10 max-w-2xl px-6">
           <h1 className="mb-6 text-5xl md:text-6xl font-bold text-white tracking-tight">
-            GraPlan
+            GraThes
           </h1>
           <p className="mb-6 text-lg text-gray-200">
             卒論や修士論文で「何から手をつければいいか分からない…」と悩んでいませんか？
@@ -27,9 +30,11 @@ export default function Home() {
             GraPlanなら、研究計画・進捗・構成をひとつの画面で管理でき、
             今日やるべきタスクがひと目で分かります。
           </p>
+          <Link href="/thesis/dashboard">
           <button className="btn btn-primary btn-lg shadow-lg hover:scale-105 transition">
             今すぐ執筆をスタート
           </button>
+          </Link>
         </div>
       </div>
 
@@ -60,8 +65,8 @@ export default function Home() {
             {/* 計画管理 */}
             <div className="rounded-2xl bg-white/80 backdrop-blur border border-gray-100 p-8 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl grid place-items-center bg-blue-50 ring-1 ring-blue-100">
-                  <img src="/icons/calendar.svg" alt="計画管理" className="h-7 w-7" />
+                <div className="h-12 w-12 rounded-xl grid place-items-center bg-blue-50 ring-1 ring-blue-100 overflow-hidden">
+                  <Image src="/icon/schedule.png" alt="計画管理" width={50} height={50} className="h-14 w-14 pb-2" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">計画管理</h3>
               </div>
@@ -73,8 +78,8 @@ export default function Home() {
             {/* 文献管理 */}
             <div className="rounded-2xl bg-white/80 backdrop-blur border border-gray-100 p-8 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl grid place-items-center bg-indigo-50 ring-1 ring-indigo-100">
-                  <img src="/icons/book.svg" alt="文献管理" className="h-7 w-7" />
+                <div className="h-12 w-12 rounded-xl grid place-items-center bg-indigo-50 ring-1 ring-indigo-100 overflow-hidden">
+                  <Image src="/icon/book.png" alt="文献管理" width={50} height={50} className="h-20 w-20 pb-8" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">文献管理</h3>
               </div>
@@ -86,8 +91,8 @@ export default function Home() {
             {/* 学習支援 */}
             <div className="rounded-2xl bg-white/80 backdrop-blur border border-gray-100 p-8 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl grid place-items-center bg-pink-50 ring-1 ring-pink-100">
-                  <img src="/icons/lightbulb.svg" alt="学習支援" className="h-7 w-7" />
+                <div className="h-12 w-12 rounded-xl grid place-items-center bg-pink-50 ring-1 ring-pink-100 overflow-hidden">
+                  <Image src="/icon/study.png" alt="学習支援" width={50} height={50}  className="h-12 w-16" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">学習支援</h3>
               </div>
@@ -133,8 +138,8 @@ export default function Home() {
               </div>
               <div className="mt-3 md:mt-6 rounded-2xl bg-white/80 backdrop-blur border border-gray-100 p-6 shadow-sm hover:shadow-xl transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl grid place-items-center bg-blue-50 ring-1 ring-blue-100">
-                    <img src="/icons/calendar.svg" alt="研究計画" className="h-6 w-6" />
+                  <div className="h-10 w-10 rounded-xl grid place-items-center bg-blue-50 ring-1 ring-blue-100 overflow-hidden">
+                    <Image src="/icon/schedule.png" alt="計画管理" width={50} height={50} className="h-14 w-14 pb-2" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900">研究計画と進捗を見える化</h3>
                 </div>
@@ -154,8 +159,8 @@ export default function Home() {
               </div>
               <div className="mt-3 md:mt-6 rounded-2xl bg-white/80 backdrop-blur border border-gray-100 p-6 shadow-sm hover:shadow-xl transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl grid place-items-center bg-indigo-50 ring-1 ring-indigo-100">
-                    <img src="/icons/checklist.svg" alt="ToDo" className="h-6 w-6" />
+                  <div className="h-10 w-10 rounded-xl grid place-items-center bg-indigo-50 ring-1 ring-indigo-100 overflow-hidden">
+                    <Image src="/icon/book.png" alt="文献管理" width={50} height={50} className="h-20 w-20 pb-8" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900">ToDoで研究タスクを整理</h3>
                 </div>
@@ -175,9 +180,8 @@ export default function Home() {
               </div>
               <div className="mt-3 md:mt-6 rounded-2xl bg-white/80 backdrop-blur border border-gray-100 p-6 shadow-sm hover:shadow-xl transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl grid place-items-center bg-pink-50 ring-1 ring-pink-100">
-                    <img src="/icons/structure.svg" alt="論文構成" className="h-6 w-6" />
-                  </div>
+                  <div className="h-10 w-10 rounded-xl grid place-items-center bg-pink-50 ring-1 ring-pink-100 overflow-hidden">
+                    <Image src="/icon/study.png" alt="学習支援" width={50} height={50} className="h-12 w-16" />                  </div>
                   <h3 className="text-xl font-semibold text-gray-900">論文構成を記録・育てる</h3>
                 </div>
                 <p className="mt-3 text-gray-600 leading-relaxed">
@@ -191,14 +195,6 @@ export default function Home() {
       </section>
 
 
-     
-
-      {/* Call to Action */}
-      <section className="py-20 bg-blue-600 text-white text-center">
-        <h2 className="text-4xl font-bold mb-4">今日からGraPlanで執筆をスタート</h2>
-        <p className="mb-6">卒論・修士論文の完成をサポートします。</p>
-        <button className="btn btn-primary btn-lg">執筆をはじめる</button>
-      </section>
     </>
   )
 }

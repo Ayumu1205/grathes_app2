@@ -9,6 +9,13 @@ const ArrowRightIcon = () => (
   <svg className="inline-block w-5 h-5 ml-1 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
 );
 
+// Propsの型を定義
+interface ArticleCardProps {
+  category_url: string;
+  slug: string;
+  title: string;
+  category: string;
+}
 
 const articleCategories = [
   {
@@ -99,7 +106,7 @@ const articleCategories = [
 
 
 // ★ [新デザイン] ポップなカードコンポーネント
-const ArticleCard = ({ category_url, slug, title, category }) => (
+const ArticleCard: React.FC<ArticleCardProps> = ({ category_url, slug, title, category }) => (
   <Link href={`/articles/${category_url}/${slug}`} legacyBehavior>
     <a className="group block bg-white rounded-2xl border border-gray-200 transition-all duration-300 ease-in-out hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10">
       <div className="p-6">
@@ -118,7 +125,7 @@ const ThesisTipsIndexPage = () => {
   return (
     <>
       <div className="mt-16 ">
-        <title>卒業論文TIPS 記事一覧 | 〇〇（アプリ名）</title>
+        <title>卒業論文TIPS 記事一覧</title>
         <meta name="description" content="卒業論文のテーマ決めからスケジュール管理、執筆、提出まで、論文作成の全工程をサポートする記事一覧です。" />
       </div>
 

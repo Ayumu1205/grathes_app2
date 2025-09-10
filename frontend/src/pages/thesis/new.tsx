@@ -1,42 +1,124 @@
 import { useRouter } from 'next/router';
 import { useState, useRef, useEffect } from 'react';
 import { TrashIcon,PlusIcon,SendIcon,ChecklistIcon,ImageIcon } from '@/components/UiParts';
+import { ReactNode } from 'react';
+
+const CloseIcon = ({ className = "h-6 w-6" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M6 18L18 6M6 6l12 12"
+    />
+  </svg>
+);
+
+const MenuIcon = ({ className = "h-6 w-6" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M4 6h16M4 12h16M4 18h16"
+    />
+  </svg>
+);
+
+
+interface ChapterState {
+  title: string;
+  description: string;
+  sections: string[];
+  sectionDescriptions: string[];
+}
+
+interface ImagePlanItem {
+  id: number;
+  done: boolean;
+  location: string;
+  description: string;
+}
+
+interface SelectedState {
+  type: 'chapter' | 'section' | 'references';
+  chapterIndex?: number;
+  sectionIndex?: number;
+}
+
+// --- Reusable UI Components Props ---
+
+interface ActionButtonProps {
+  onClick: () => void;
+  children: ReactNode;
+  className?: string;
+}
+
+interface IconButtonProps {
+  onClick: () => void;
+  'aria-label': string;
+  children: ReactNode;
+}
+
+interface AutoSizingTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  minRows?: number;
+}
+
+interface TodoModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  text: string;
+  onTextChange: (value: string) => void;
+}
+
+interface ImagePlanModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  list: ImagePlanItem[];
+  onListChange: (list: ImagePlanItem[]) => void;
+  chapters: ChapterState[];
+}
+
 
 // --- Reusable UI Components ---
-const ActionButton = ({ onClick, children, className = 'text-blue-700 bg-blue-100 hover:bg-blue-200' }) => (
+const ActionButton = ({ onClick, children, className = 'text-blue-700 bg-blue-100 hover:bg-blue-200' }: ActionButtonProps) => (
   <button onClick={onClick} className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md transition-colors ${className}`}>
     <PlusIcon />
     {children}
   </button>
 );
-const IconButton = ({ onClick, 'aria-label': ariaLabel, children }) => (
+
+const IconButton = ({ onClick, 'aria-label': ariaLabel, children }: IconButtonProps) => (
   <button onClick={onClick} className="ml-2 p-1.5 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 transition-colors" aria-label={ariaLabel}>
     {children}
   </button>
 );
-const MenuIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-  </svg>
-);
-const CloseIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
 
-const AutoSizingTextarea = ({ minRows = 1, ...props }) => {
-  const textareaRef = useRef(null);
+const AutoSizingTextarea = ({ minRows = 1, ...props }: AutoSizingTextareaProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => { if (textareaRef.current) { textareaRef.current.style.height = 'auto'; const scrollHeight = textareaRef.current.scrollHeight; textareaRef.current.style.height = `${scrollHeight}px`; } }, [props.value]);
   return <textarea ref={textareaRef} rows={minRows} {...props} />;
 };
-const TodoModal = ({ isOpen, onClose, text, onTextChange }) => {
+
+const TodoModal = ({ isOpen, onClose, text, onTextChange }: TodoModalProps) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg" onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}>
         <h2 className="text-xl font-bold mb-4">Todoリスト</h2>
-        <AutoSizingTextarea className="w-full p-3 border rounded-md" value={text} onChange={(e) => onTextChange(e.target.value)} minRows={10} placeholder="タスクやメモを記入..." />
+        <AutoSizingTextarea className="w-full p-3 border rounded-md" value={text} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onTextChange(e.target.value)} minRows={10} placeholder="タスクやメモを記入..." />
         <div className="text-right mt-4">
           <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">閉じる</button>
         </div>
@@ -44,11 +126,11 @@ const TodoModal = ({ isOpen, onClose, text, onTextChange }) => {
     </div>
   );
 };
-const ImagePlanModal = ({ isOpen, onClose, list, onListChange, chapters }) => {
+const ImagePlanModal = ({ isOpen, onClose, list, onListChange, chapters }: ImagePlanModalProps) => {
   if (!isOpen) return null;
-  const handleItemChange = (itemId, field, value) => { onListChange(list.map(item => item.id === itemId ? { ...item, [field]: value } : item)); };
-  const handleAddItem = () => { const newItem = { id: Date.now(), done: false, location: '0', description: '' }; onListChange([...list, newItem]); };
-  const handleDeleteItem = (itemId) => { onListChange(list.filter(item => item.id !== itemId)); };
+  const handleItemChange = (itemId: number, field: keyof ImagePlanItem, value: string | boolean) => { onListChange(list.map(item => item.id === itemId ? { ...item, [field]: value } : item)); };
+  const handleAddItem = () => { const newItem: ImagePlanItem = { id: Date.now(), done: false, location: '0', description: '' }; onListChange([...list, newItem]); };
+  const handleDeleteItem = (itemId: number) => { onListChange(list.filter(item => item.id !== itemId)); };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
@@ -93,11 +175,35 @@ const ImagePlanModal = ({ isOpen, onClose, list, onListChange, chapters }) => {
     </div>
   );
 };
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+  thesisTitle: string;
+  onThesisTitleChange: (title: string) => void;
+  chapters: ChapterState[];
+  selected: SelectedState | null;
+  onNavigate: (chapterIndex: number | null, sectionIndex?: number | null, specialSection?: "references" | null) => void;
+  onAddChapter: (index: number) => void;
+  onAddSection: (chapterIndex: number) => void;
+  onDeleteChapter: (chapterIndex: number) => void;
+  onDeleteSection: (chapterIndex: number, sectionIndex: number) => void;
+  onSubmit: () => void;
+  onOpenTodo: () => void;
+  onOpenImagePlan: () => void;
+}
+
+
+interface EditorPanelProps {
+  chapters: ChapterState[];
+  references: string;
+  onInputChange: (chapterIndex: number, sectionIndex: number | null, value: string) => void;
+  onDescriptionChange: (chapterIndex: number, sectionIndex: number | null, value: string) => void;
+  onReferencesChange: (value: string) => void;
+}
 
 
 // --- Main Feature Components ---
-// ★ [変更] propsに `isOpen` と `onClose` を追加して、モバイルでの表示制御を行う
-const Sidebar = ({ isOpen, onClose, thesisTitle, onThesisTitleChange, chapters, selected, onNavigate, onAddChapter, onAddSection, onDeleteChapter, onDeleteSection, onSubmit, onOpenTodo, onOpenImagePlan }) => (
+const Sidebar = ({ isOpen, onClose, thesisTitle, onThesisTitleChange, chapters, selected, onNavigate, onAddChapter, onAddSection, onDeleteChapter, onDeleteSection, onSubmit, onOpenTodo, onOpenImagePlan }: SidebarProps) => (
   <>
     {/* ★ [変更] モバイル表示時にサイドバーの外側をクリックしたときに閉じるためのオーバーレイ */}
     <div
@@ -163,7 +269,7 @@ const Sidebar = ({ isOpen, onClose, thesisTitle, onThesisTitleChange, chapters, 
     </aside>
   </>
 );
-const EditorPanel = ({ chapters, references, onInputChange, onDescriptionChange, onReferencesChange }) => (
+const EditorPanel = ({ chapters, references, onInputChange, onDescriptionChange, onReferencesChange }: EditorPanelProps) => (
   <div className="flex-1 p-4 sm:p-8 overflow-y-auto pt-24 mt-12">
     {chapters.map((chapter, chapterIndex) => (
       <div key={chapterIndex} id={`chapter-${chapterIndex}`} className="mb-10 scroll-mt-24">
@@ -189,7 +295,11 @@ const EditorPanel = ({ chapters, references, onInputChange, onDescriptionChange,
     </div>
   </div>
 );
-
+interface SelectedState {
+  type: 'chapter' | 'section' | 'references';
+  chapterIndex?: number; // '?' を付けて任意にする
+  sectionIndex?: number; // '?' を付けて任意にする
+}
 
 // --- Main App Component ---
 export default function ThesisEditor() {
@@ -197,7 +307,7 @@ export default function ThesisEditor() {
   const [thesisTitle, setThesisTitle] = useState('卒業論文テーマ');
   const [chapters, setChapters] = useState([{ title: '序論', description: 'ここに「序論」の概要を記述します。', sections: ['研究背景', "研究目的"], sectionDescriptions: ['研究背景について述べます。', "研究目的について述べます。"] }, { title: '実験方法', description: '本研究で用いた実験方法について詳述します。', sections: ['材料', '装置'], sectionDescriptions: ['使用した試薬やサンプルについて記述します。', '使用した測定装置のモデル名や設定について記述します。'] }, { title: '結果と考察', description: '', sections: [], sectionDescriptions: [] }, { title: '結論', description: '', sections: [], sectionDescriptions: [] }, { title: '謝辞', description: '', sections: [], sectionDescriptions: [] },]);
   const [references, setReferences] = useState('1. Author, A. A. (2025). ...');
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState<SelectedState | null>(null);
   const [isTodoModalOpen, setIsTodoModalOpen] = useState(false);
   const [todoText, setTodoText] = useState('');
   const [isImagePlanModalOpen, setIsImagePlanModalOpen] = useState(false);
@@ -206,13 +316,37 @@ export default function ThesisEditor() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // --- Handlers ---
-  const handleInputChange = (chapterIndex, sectionIndex, value) => { setChapters(prev => { const newChapters = JSON.parse(JSON.stringify(prev)); if (sectionIndex === null) { newChapters[chapterIndex].title = value; } else { newChapters[chapterIndex].sections[sectionIndex] = value; } return newChapters; }); };
-  const handleDescriptionChange = (chapterIndex, sectionIndex, value) => { setChapters(prev => { const newChapters = JSON.parse(JSON.stringify(prev)); if (sectionIndex === null) { newChapters[chapterIndex].description = value; } else { newChapters[chapterIndex].sectionDescriptions[sectionIndex] = value; } return newChapters; }); };
-  const handleAddChapter = (insertAtIndex) => { const newChapter = { title: '新しい章', description: '', sections: ['新しい節'], sectionDescriptions: [''] }; setChapters(prev => { const newChapters = [...prev]; newChapters.splice(insertAtIndex, 0, newChapter); return newChapters; }); };
-  const handleDeleteChapter = (chapterIndex) => { if (window.confirm(`第${chapterIndex + 1}章を本当に削除しますか？`)) { setChapters(prev => prev.filter((_, index) => index !== chapterIndex)); setSelected(null); } };
-  const handleAddSection = (chapterIndex) => { setChapters(prev => { const newChapters = JSON.parse(JSON.stringify(prev)); newChapters[chapterIndex].sections.push('新しい節'); newChapters[chapterIndex].sectionDescriptions.push(''); return newChapters; }); };
-  const handleDeleteSection = (chapterIndex, sectionIndex) => { if (window.confirm(`第${chapterIndex + 1}.${sectionIndex + 1}節を本当に削除しますか？`)) { setChapters(prev => { const newChapters = JSON.parse(JSON.stringify(prev)); newChapters[chapterIndex].sections.splice(sectionIndex, 1); newChapters[chapterIndex].sectionDescriptions.splice(sectionIndex, 1); return newChapters; }); setSelected(null); } };
-  const handleNavigation = (chapterIndex, sectionIndex = null, specialSection = null) => { let elementId; if (specialSection) { setSelected({ type: specialSection }); elementId = specialSection; } else if (sectionIndex === null) { setSelected({ type: 'chapter', chapterIndex }); elementId = `chapter-${chapterIndex}`; } else { setSelected({ type: 'section', chapterIndex, sectionIndex }); elementId = `section-${chapterIndex}-${sectionIndex}`; } const element = document.getElementById(elementId); if (element) { element.scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
+  const handleInputChange = (chapterIndex: number, sectionIndex: number | null, value: string) => { setChapters(prev => { const newChapters = JSON.parse(JSON.stringify(prev)); if (sectionIndex === null) { newChapters[chapterIndex].title = value; } else { newChapters[chapterIndex].sections[sectionIndex] = value; } return newChapters; }); };
+  const handleDescriptionChange = (chapterIndex: number, sectionIndex: number | null, value: string) => { setChapters(prev => { const newChapters = JSON.parse(JSON.stringify(prev)); if (sectionIndex === null) { newChapters[chapterIndex].description = value; } else { newChapters[chapterIndex].sectionDescriptions[sectionIndex] = value; } return newChapters; }); };
+  const handleAddChapter = (insertAtIndex: number) => { const newChapter = { title: '新しい章', description: '', sections: ['新しい節'], sectionDescriptions: [''] }; setChapters(prev => { const newChapters = [...prev]; newChapters.splice(insertAtIndex, 0, newChapter); return newChapters; }); };
+  const handleDeleteChapter = (chapterIndex: number) => { if (window.confirm(`第${chapterIndex + 1}章を本当に削除しますか？`)) { setChapters(prev => prev.filter((_, index) => index !== chapterIndex)); setSelected(null); } };
+  const handleAddSection = (chapterIndex: number) => { setChapters(prev => { const newChapters = JSON.parse(JSON.stringify(prev)); newChapters[chapterIndex].sections.push('新しい節'); newChapters[chapterIndex].sectionDescriptions.push(''); return newChapters; }); };
+  const handleDeleteSection = (chapterIndex: number, sectionIndex: number) => { if (window.confirm(`第${chapterIndex + 1}.${sectionIndex + 1}節を本当に削除しますか？`)) { setChapters(prev => { const newChapters = JSON.parse(JSON.stringify(prev)); newChapters[chapterIndex].sections.splice(sectionIndex, 1); newChapters[chapterIndex].sectionDescriptions.splice(sectionIndex, 1); return newChapters; }); setSelected(null); } };
+  const handleNavigation = (
+    chapterIndex: number | null,
+    sectionIndex: number | null = null,
+    specialSection: 'references' | null = null
+  ) => {
+    let elementId;
+    if (specialSection) {
+      setSelected({ type: specialSection });
+      elementId = specialSection;
+    } else if (chapterIndex !== null && sectionIndex === null) { // chapterIndexがnullでないこともチェック
+      setSelected({ type: 'chapter', chapterIndex });
+      elementId = `chapter-${chapterIndex}`;
+    } else if (chapterIndex !== null && sectionIndex !== null) { // 両方がnullでないことをチェック
+      setSelected({ type: 'section', chapterIndex, sectionIndex });
+      elementId = `section-${chapterIndex}-${sectionIndex}`;
+    }
+
+    // elementIdがundefinedになる可能性を避けるため、チェックを追加
+    if (elementId) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
 
   const handleSubmit = async () => {
     const chaptersForApi = chapters.map((chapter) => ({ title: chapter.title, description: chapter.description, progress: 0, sections: chapter.sections.map((sectionTitle, index) => ({ title: sectionTitle, description: chapter.sectionDescriptions[index] || '', })), }));
