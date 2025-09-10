@@ -4,10 +4,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 const prisma = new PrismaClient();
 
-// 秘密鍵は必ず.envファイルで管理してください
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-default-super-secret-key-for-development'
-);
+// // 秘密鍵は必ず.envファイルで管理してください
+// const JWT_SECRET = new TextEncoder().encode(
+//   process.env.JWT_SECRET || 'your-default-super-secret-key-for-development'
+// );
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -16,19 +16,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // ★ 1. リクエストのクッキーからセッショントークンを取得
-    const token = req.cookies.sessionToken;
+    // const token = req.cookies.sessionToken;
 
-    if (!token) {
-      return res.status(401).json({ message: 'Not authenticated' });
-    }
+    // if (!token) {
+    //   return res.status(401).json({ message: 'Not authenticated' });
+    // }
 
-    // ★ 2. トークンを検証し、ユーザーIDを取得
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    const userId = Number(payload.sub);
+    // // ★ 2. トークンを検証し、ユーザーIDを取得
+    // const { payload } = await jwtVerify(token, JWT_SECRET);
+    // const userId = Number(payload.sub);
+    const userId = 1;
 
-    if (!userId) {
-      return res.status(401).json({ message: 'Invalid token' });
-    }
+    // if (!userId) {
+    //   return res.status(401).json({ message: 'Invalid token' });
+    // }
 
     const { title, chapters, references, todoText, imagePlanList } = req.body;
 

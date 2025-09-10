@@ -4,13 +4,16 @@ import useSWR from 'swr';
 import { fetcher } from '@/utils';
 import { TrashIcon, PlusIcon, SendIcon, ChecklistIcon, ImageIcon, GearIcon,Loading } from "../../../components/UiParts"
 
-interface ChapterState { title: string; description: string; sections: string[]; sectionDescriptions: string[]; }
-interface ImagePlanItem { id: number; done: boolean; location: string; description: string; }
-interface ThesisSettings { targetWordCount: number; deadline: string; wordCountWeight: number; }
-interface SelectedState { type: 'chapter' | 'section' | 'references'; chapterIndex?: number; sectionIndex?: number; }
-interface ChapterFromDB { id: number; title: string; description: string; sections: { id: number; title: string; description: string; }[]; }
-interface ReferenceFromDB { id: number; title: string; }
-interface ThesisData { title: string; chapters: ChapterFromDB[]; references: ReferenceFromDB[]; todoText: string | null; imagePlanList: ImagePlanItem[]; targetWordCount: number | null; deadline: string | null; wordCountWeight: number | null; }
+const MenuIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+);
+const CloseIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
 
 // --- コンポーネントPropsの型定義 ---
 interface ActionButtonProps { onClick: () => void; children: React.ReactNode; className?: string; }
@@ -50,6 +53,7 @@ export default function ThesisEditPage() {
   const [targetWordCount, setTargetWordCount] = useState(20000);
   const [deadline, setDeadline] = useState('');
   const [wordCountWeight, setWordCountWeight] = useState(70);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const router = useRouter();
 
@@ -84,8 +88,34 @@ export default function ThesisEditPage() {
   const wordCount = useMemo(() => { let count = 0; (chapters || []).forEach(ch => { count += (ch.description || '').length; (ch.sectionDescriptions || []).forEach(desc => { count += (desc || '').length; }); }); count += (references || '').length; return count; }, [chapters, references]);
 
   // --- Handlers ---
-  const handleInputChange = (chapterIndex: number, sectionIndex: number | null, value: string) => { setChapters(prev => { const newChapters = JSON.parse(JSON.stringify(prev)); if (sectionIndex === null) { newChapters[chapterIndex].title = value; } else { newChapters[chapterIndex].sections[sectionIndex] = value; } return newChapters; }); };
-  const handleDescriptionChange = (chapterIndex: number, sectionIndex: number | null, value: string) => { setChapters(prev => { const newChapters = JSON.parse(JSON.stringify(prev)); if (sectionIndex === null) { newChapters[chapterIndex].description = value; } else { newChapters[chapterIndex].sectionDescriptions[sectionIndex] = value; } return newChapters; }); };
+  const handleInputChange = (chapterIndex: number, sectionIndex: number | null, value: string) => {
+    setChapters(prev =>
+      prev.map((chapter, idx) => {
+        if (idx !== chapterIndex) return chapter;
+        if (sectionIndex === null) {
+          return { ...chapter, title: value };
+        } else {
+          const newSections = [...chapter.sections];
+          newSections[sectionIndex] = value;
+          return { ...chapter, sections: newSections };
+        }
+      })
+    );
+  };  
+  const handleDescriptionChange = (chapterIndex: number, sectionIndex: number | null, value: string) => {
+    setChapters(prev =>
+      prev.map((chapter, idx) => {
+        if (idx !== chapterIndex) return chapter;
+        if (sectionIndex === null) {
+          return { ...chapter, description: value };
+        } else {
+          const newSectionDescriptions = [...chapter.sectionDescriptions];
+          newSectionDescriptions[sectionIndex] = value;
+          return { ...chapter, sectionDescriptions: newSectionDescriptions };
+        }
+      })
+    );
+  };
   const handleAddChapter = (insertAtIndex: number) => { const newChapter: ChapterState = { title: '新しい章', description: '', sections: ['新しい節'], sectionDescriptions: [''] }; setChapters(prev => { const newChapters = [...prev]; newChapters.splice(insertAtIndex, 0, newChapter); return newChapters; }); };
   const handleDeleteChapter = (chapterIndex: number) => { if (window.confirm(`第${chapterIndex + 1}章を本当に削除しますか？`)) { setChapters(prev => prev.filter((_, index) => index !== chapterIndex)); setSelected(null); } };
   const handleAddSection = (chapterIndex: number) => { setChapters(prev => { const newChapters = JSON.parse(JSON.stringify(prev)); newChapters[chapterIndex].sections.push('新しい節'); newChapters[chapterIndex].sectionDescriptions.push(''); return newChapters; }); };
@@ -143,16 +173,45 @@ export default function ThesisEditPage() {
   const progressBarColor = overallProgress >= 99 ? 'bg-green-500' : overallProgress > 70 ? 'bg-blue-500' : 'bg-yellow-500';
 
   return (
-    <div className="flex w-full h-screen">
-      {/* Sidebar */}
-      <div className="w-1/4 bg-gray-100 border-r p-4 pt-24 flex flex-col">
+    <div className="flex flex-col lg:flex-row w-full h-screen bg-gray-50">
+
+      {/* ★ [変更] モバイル用のハンバーガーメニューボタン */}
+      <button
+        onClick={() => setIsSidebarOpen(true)}
+        aria-label="メニューを開く"
+        className="lg:hidden fixed top-4 left-4 z-30 p-2 bg-white rounded-full shadow-md text-gray-700"
+      >
+        <MenuIcon />
+      </button>
+
+      {/* ★ [変更] モバイル表示時のオーバーレイ */}
+      <div
+        className={`fixed inset-0 bg-black/50 z-20 lg:hidden transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setIsSidebarOpen(false)}
+      />
+
+
+      {/* aside本体のz-indexを z-50 から z-30 に変更 */}
+      <aside className={`
+      fixed lg:static inset-y-0 left-0 z-30
+      w-full max-w-xs h-screen flex flex-col
+      bg-gray-100 border-r p-4 pt-16 lg:pt-24
+      transform transition-transform duration-300 ease-in-out
+      lg:w-1/4 lg:translate-x-0
+      ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+    `}>
+        {/* ★ [変更] モバイル用の閉じるボタン */}
+        <button onClick={() => setIsSidebarOpen(false)} aria-label="メニューを閉じる" className="lg:hidden absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-800">
+          <CloseIcon />
+        </button>
+
         <div className='flex-shrink-0'>
           <h2 className="font-bold mb-2">論文タイトル</h2>
           <input type="text" className="w-full p-2 rounded-md border border-gray-300" value={thesisTitle} onChange={(e) => setThesisTitle(e.target.value)} placeholder="論文タイトルを入力..." />
         </div>
         <div className="flex-shrink-0 mt-4 pt-4 border-t">
           <div className="flex justify-between items-center mb-1 text-sm"><span className="font-medium text-gray-600">総合進捗</span><span className="font-bold text-gray-800">{Math.round(overallProgress)}%</span></div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2"><div className={`${progressBarColor} h-2.5 rounded-full transition-all duration-500 ease-out`} style={{ width: `${overallProgress}%` }}></div></div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2"><div className={`${progressBarColor} h-2.5 rounded-full transition-all duration-500 ease-out`} style={{ width: `${Math.min(overallProgress, 100)}%` }}></div></div>
           <div className="text-xs text-gray-500 text-center"><span>{(wordCount || 0).toLocaleString()} / {(targetWordCount || 0).toLocaleString()} 字</span></div>
         </div>
         <div className="flex-grow overflow-y-auto pr-2 mt-4 pt-4 border-t">
@@ -171,10 +230,35 @@ export default function ThesisEditPage() {
           <button onClick={() => setIsImagePlanModalOpen(true)} className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-50 border transition-colors"><ImageIcon /> 挿入計画リスト</button>
           <button onClick={handleSubmit} className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-green-100 text-green-700 font-semibold rounded-lg shadow-sm hover:bg-green-200 transition-colors"><SendIcon /> 論文を更新する</button>
         </div>
-      </div>
+      </aside>
 
       {/* EditorPanel */}
-      <div className="flex-1 p-8 overflow-y-auto pt-24">{chapters.map((chapter, chapterIndex) => (<div key={chapterIndex} id={`chapter-${chapterIndex}`} className="mb-10 scroll-mt-24"><div className="flex items-center w-full p-4 mb-2 rounded-lg bg-white hover:bg-gray-100 focus-within:bg-gray-50 transition-colors duration-200"><span className="text-2xl font-bold text-gray-500 mr-2">第{chapterIndex + 1}章</span><input type="text" className="w-full text-2xl font-bold bg-transparent focus:outline-none" placeholder="章のタイトル" value={chapter.title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(chapterIndex, null, e.target.value)} /></div><AutoSizingTextarea className="w-full p-4 mb-6 resize-none rounded-lg bg-white hover:bg-gray-100 focus-within:bg-gray-50 transition-colors duration-200" placeholder="章の説明文を入力" value={chapter.description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleDescriptionChange(chapterIndex, null, e.target.value)} minRows={3} />{chapter.sections.map((section, sectionIndex) => (<div key={sectionIndex} id={`section-${chapterIndex}-${sectionIndex}`} className="ml-8 mb-6 scroll-mt-24"><div className="flex items-center w-full p-4 mb-2 rounded-lg bg-white hover:bg-gray-100 focus-within:bg-gray-50 transition-colors duration-200"><span className="text-lg font-semibold text-gray-500 mr-2">{chapterIndex + 1}.{sectionIndex + 1}</span><input type="text" className="w-full text-lg font-semibold bg-transparent focus:outline-none" placeholder="節のタイトル" value={section} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(chapterIndex, sectionIndex, e.target.value)} /></div><AutoSizingTextarea className="w-full p-4 resize-none rounded-lg bg-white hover:bg-gray-100 focus-within:bg-gray-50 transition-colors duration-200" placeholder="節の説明文を入力" value={chapter.sectionDescriptions[sectionIndex]} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleDescriptionChange(chapterIndex, sectionIndex, e.target.value)} minRows={5} /></div>))}</div>))}<div id="references" className="mt-16 pt-8 border-t-2 border-gray-300 scroll-mt-24"><h2 className="text-2xl font-bold text-gray-700 mb-4">参考文献</h2><AutoSizingTextarea className="w-full p-4 text-base leading-relaxed bg-white hover:bg-gray-100 focus:bg-gray-50 focus:outline-none transition-colors duration-200 rounded-lg" placeholder="参考文献をリスト形式で入力" value={references} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReferences(e.target.value)} minRows={10} /></div></div>
+      <main className="mt-24 flex-1 w-full h-screen overflow-y-auto">
+        <div className="p-4 sm:p-8 pt-24">
+          {chapters.map((chapter, chapterIndex) => (
+            <div key={chapterIndex} id={`chapter-${chapterIndex}`} className="mb-10 scroll-mt-24">
+              <div className="flex items-center w-full p-4 mb-2 rounded-lg bg-white hover:bg-gray-100 focus-within:bg-gray-50 transition-colors duration-200">
+                <span className="w-[100px] text-xl sm:text-2xl font-bold text-gray-500 mr-2">第{chapterIndex + 1}章</span>
+                <input type="text" className="w-full text-xl sm:text-2xl font-bold bg-transparent focus:outline-none" placeholder="章のタイトル" value={chapter.title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(chapterIndex, null, e.target.value)} />
+              </div>
+              <AutoSizingTextarea className="w-full p-4 mb-6 resize-none rounded-lg bg-white hover:bg-gray-100 focus-within:bg-gray-50 transition-colors duration-200" placeholder="章の説明文を入力" value={chapter.description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleDescriptionChange(chapterIndex, null, e.target.value)} minRows={3} />
+              {chapter.sections.map((section, sectionIndex) => (
+                <div key={sectionIndex} id={`section-${chapterIndex}-${sectionIndex}`} className=" mb-6 scroll-mt-24">
+                  <div className="flex items-center w-full p-4 mb-2 rounded-lg bg-white hover:bg-gray-100 focus-within:bg-gray-50 transition-colors duration-200">
+                    <span className="w-[50px] text-base sm:text-lg font-semibold text-gray-500 mr-2">{chapterIndex + 1}.{sectionIndex + 1}</span>
+                    <input type="text" className="w-full text-base sm:text-lg font-semibold bg-transparent focus:outline-none" placeholder="節のタイトル" value={section} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(chapterIndex, sectionIndex, e.target.value)} />
+                  </div>
+                  <AutoSizingTextarea className="w-full p-4 resize-none rounded-lg bg-white hover:bg-gray-100 focus-within:bg-gray-50 transition-colors duration-200" placeholder="節の説明文を入力" value={chapter.sectionDescriptions[sectionIndex]} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleDescriptionChange(chapterIndex, sectionIndex, e.target.value)} minRows={5} />
+                </div>
+              ))}
+            </div>
+          ))}
+          <div id="references" className="mt-16 pt-8 border-t-2 border-gray-300 scroll-mt-24">
+            <h2 className="text-2xl font-bold text-gray-700 mb-4">参考文献</h2>
+            <AutoSizingTextarea className="w-full p-4 text-base leading-relaxed bg-white hover:bg-gray-100 focus:bg-gray-50 focus:outline-none transition-colors duration-200 rounded-lg" placeholder="参考文献をリスト形式で入力" value={references} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReferences(e.target.value)} minRows={10} />
+          </div>
+        </div>
+      </main>
 
       {/* Modals */}
       <TodoModal isOpen={isTodoModalOpen} onClose={() => setIsTodoModalOpen(false)} text={todoText} onTextChange={setTodoText} />

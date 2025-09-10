@@ -1,17 +1,26 @@
 
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
-import {MailIcon, LockIcon} from "../../components/UiParts"
+import {MailIcon, LockIcon, Loading} from "../../components/UiParts"
+import { useState } from 'react';
 
 type SignInFormData = {
   email: string
   password: string
 }
-
+const SpinnerIcon = () => (
+  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+  </svg>
+);
 
 /**
  * モダンなサインインページコンポーネント
  */
 export default function SignInPage() {
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { control, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       email: '',
@@ -21,9 +30,10 @@ export default function SignInPage() {
   });
 
   const onSubmit: SubmitHandler<{ email: string, password: string }> = (data) => {
+    // ★ 処理開始時にローディング状態をtrueにする
+    setIsSubmitting(true);
+
     const SignIn = async (data: SignInFormData) => {
-
-
     try {
       // 1. ログイン用のAPIエンドポイントにデータを送信
       const res = await fetch('/api/auth/signin', {
@@ -48,12 +58,15 @@ export default function SignInPage() {
       // 通信エラーなど、予期せぬエラーが発生した場合
       console.error('ログイン処理中にエラーが発生しました:', error);
       alert('通信エラーが発生しました。');
+    } finally {
+      setIsSubmitting(false);
     }
   }
     SignIn(data)
   };
 
   return (
+    
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
@@ -127,9 +140,17 @@ export default function SignInPage() {
             <div>
               <button
                 type="submit"
-                className="w-full py-3 px-4 bg-black text-white font-semibold rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors"
+                disabled={isSubmitting} // ローディング中はボタンを無効化
+                className="w-full py-3 px-4 bg-black text-white font-semibold rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors flex justify-center items-center disabled:bg-gray-500 disabled:cursor-not-allowed"
               >
-                サインイン
+                {isSubmitting ? (
+                  <>
+                    <SpinnerIcon />
+                    <span className="ml-2">ログイン中...</span>
+                  </>
+                ) : (
+                  'サインイン'
+                )}
               </button>
             </div>
           </form>

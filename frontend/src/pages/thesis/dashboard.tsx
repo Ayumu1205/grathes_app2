@@ -30,7 +30,7 @@ interface ApiResponse {
 export default function DashboarFexpad() {
   const url = '/api/thesis'; // APIのURLは環境に合わせて調整してください
 
-  const { data, error, isLoading } = useSWR<ApiResponse>(url, fetcher);
+  const { data, error, isLoading, mutate } = useSWR<ApiResponse>(url, fetcher);
 
   const [expandedStates, setExpandedStates] = useState<{ [key: number]: string | null }>({});
 
@@ -66,7 +66,7 @@ export default function DashboarFexpad() {
   }, [data]);
 
 
-  if (error) return <div>{error}</div>
+  
   if (isLoading) return <Loading />
 
   const theses = data?.allThesis ?? []
@@ -193,6 +193,26 @@ export default function DashboarFexpad() {
                     </Link>
                   </div>
                 </div>
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={async () => {
+                      if (!confirm('本当に削除しますか？')) return;
+
+                      try {
+                        await fetch(`/api/thesis/${id}`, { method: 'DELETE' });
+                        // SWRのキャッシュを更新して画面を再描画
+                        mutate('/api/thesis');
+                      } catch (err) {
+                        console.error(err);
+                        alert('削除に失敗しました');
+                      }
+                    }}
+                    className="text-red-500 bg-red-50 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-red-100 transition-colors"
+                  >
+                    論文を削除
+                  </button>
+                </div>
+
               </div>
             );
           })
@@ -200,7 +220,7 @@ export default function DashboarFexpad() {
           <p className="text-center text-gray-500">作成された論文はありません。</p>
         )}
 
-        <Link href="/thesis/test" className="block">
+        <Link href="/thesis/new" className="block">
           <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 w-full max-w-2xl mx-auto text-gray-400 hover:bg-gray-100 hover:border-gray-400 transition-colors flex flex-col items-center justify-center h-[288px]">
             <FiFilePlus className="h-8 w-8" />
             <span className="mt-2 font-semibold">新規論文作成</span>

@@ -13,16 +13,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'GET') {
     try {
       // 1. ブラウザから自動で送られてきたクッキーを取得
-      const token = req.cookies.sessionToken;
+      // const token = req.cookies.sessionToken;
 
-      if (!token) {
-        // ログインしていない場合はエラーを返す
-        return res.status(401).json({ message: 'Not authenticated' });
-      }
+      // if (!token) {
+      //   // ログインしていない場合はエラーを返す
+      //   return res.status(401).json({ message: 'Not authenticated' });
+      // }
 
-      // 2. クッキー内のトークンを検証し、ユーザーIDを取り出す
-      const { payload } = await jwtVerify(token, JWT_SECRET);
-      const userId = Number(payload.sub);
+      // // 2. クッキー内のトークンを検証し、ユーザーIDを取り出す
+      // const { payload } = await jwtVerify(token, JWT_SECRET);
+      // const userId = Number(payload.sub);
+      const userId = 1;
 
       if (!userId) {
         return res.status(401).json({ message: 'Invalid token' });

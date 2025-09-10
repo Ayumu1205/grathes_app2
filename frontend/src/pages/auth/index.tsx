@@ -30,7 +30,7 @@ export default function SignUpPage() {
     const SignUp = async (data: SignUpFormData) => {
      
       //Railsサーバー環境用URL
-      const url = process.env.NEXT_PUBLIC_FRONT + '/api/auth/signup'
+      const url = '/api/auth/signup'
 
       //ヘッダー情報
       const headers = { 'Content-Type': 'application/json' }

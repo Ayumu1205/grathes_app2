@@ -1,23 +1,6 @@
 import { useRouter } from 'next/router';
 import { useState, useRef, useEffect } from 'react';
-
-// --- Icon Components ---
-const TrashIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>
-);
-const PlusIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-);
-const SendIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-);
-const ChecklistIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-);
-const ImageIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-);
-
+import { TrashIcon,PlusIcon,SendIcon,ChecklistIcon,ImageIcon } from '@/components/UiParts';
 
 // --- Reusable UI Components ---
 const ActionButton = ({ onClick, children, className = 'text-blue-700 bg-blue-100 hover:bg-blue-200' }) => (
@@ -31,6 +14,17 @@ const IconButton = ({ onClick, 'aria-label': ariaLabel, children }) => (
     {children}
   </button>
 );
+const MenuIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+);
+const CloseIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
 const AutoSizingTextarea = ({ minRows = 1, ...props }) => {
   const textareaRef = useRef(null);
   useEffect(() => { if (textareaRef.current) { textareaRef.current.style.height = 'auto'; const scrollHeight = textareaRef.current.scrollHeight; textareaRef.current.style.height = `${scrollHeight}px`; } }, [props.value]);
@@ -39,7 +33,7 @@ const AutoSizingTextarea = ({ minRows = 1, ...props }) => {
 const TodoModal = ({ isOpen, onClose, text, onTextChange }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-xl font-bold mb-4">Todoリスト</h2>
         <AutoSizingTextarea className="w-full p-3 border rounded-md" value={text} onChange={(e) => onTextChange(e.target.value)} minRows={10} placeholder="タスクやメモを記入..." />
@@ -57,12 +51,13 @@ const ImagePlanModal = ({ isOpen, onClose, list, onListChange, chapters }) => {
   const handleDeleteItem = (itemId) => { onListChange(list.filter(item => item.id !== itemId)); };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-xl font-bold mb-4">画像・データ挿入計画リスト</h2>
-        <div className="overflow-y-auto max-h-[60vh]">
-          <table className="w-full table-auto border-collapse">
-            <thead className="sticky top-0 bg-gray-100">
+        {/* ★ [変更] テーブルをコンテナで囲み、小さい画面で横スクロール可能にする */}
+        <div className="overflow-auto max-h-[60vh]">
+          <table className="w-full table-auto border-collapse min-w-[600px]">
+            <thead className="sticky top-0 bg-gray-100 z-10">
               <tr>
                 <th className="px-2 py-2 w-12 text-center">完了</th>
                 <th className="px-4 py-2 text-left">挿入箇所</th>
@@ -101,64 +96,86 @@ const ImagePlanModal = ({ isOpen, onClose, list, onListChange, chapters }) => {
 
 
 // --- Main Feature Components ---
-const Sidebar = ({ thesisTitle, onThesisTitleChange, chapters, selected, onNavigate, onAddChapter, onAddSection, onDeleteChapter, onDeleteSection, onSubmit, onOpenTodo, onOpenImagePlan }) => (
-  <div className="w-1/4 bg-gray-100 border-r p-4 pt-24 flex flex-col">
-    <div className='flex-shrink-0'>
-      <h2 className="font-bold mb-2">論文タイトル</h2>
-      <input
-        type="text"
-        className="w-full p-2 rounded-md border border-gray-300"
-        value={thesisTitle}
-        onChange={(e) => onThesisTitleChange(e.target.value)}
-        placeholder="論文タイトルを入力..."
-      />
-    </div>
-    <div className="flex-grow overflow-y-auto pr-2 mt-4 pt-4 border-t">
-      <h2 className="font-bold mb-4 flex-shrink-0">論文構成</h2>
-      {chapters.map((chapter, chapterIndex) => (
-        <div key={chapterIndex} className="mb-4">
-          <div className="flex items-center justify-between">
-            <button className={`flex-grow text-left px-2 py-1 rounded h-[25px] flex items-center overflow-hidden ${selected?.type === 'chapter' && selected.chapterIndex === chapterIndex ? 'bg-blue-200' : 'hover:bg-gray-200'}`} onClick={() => onNavigate(chapterIndex)}>第{chapterIndex + 1}章 {chapter.title}</button>
-            <IconButton onClick={() => onDeleteChapter(chapterIndex)} aria-label="章を削除"><TrashIcon /></IconButton>
-          </div>
-          <div className="ml-4">
-            {chapter.sections.map((section, sectionIndex) => (
-              <div key={sectionIndex} className="flex items-center justify-between">
-                <button className={`flex-grow text-left px-2 py-1 rounded text-sm h-[25px] overflow-hidden ${selected?.type === 'section' && selected.chapterIndex === chapterIndex && selected.sectionIndex === sectionIndex ? 'bg-blue-100' : 'hover:bg-gray-200'}`} onClick={() => onNavigate(chapterIndex, sectionIndex)}>{chapterIndex + 1}.{sectionIndex + 1} {section}</button>
-                <IconButton onClick={() => onDeleteSection(chapterIndex, sectionIndex)} aria-label="節を削除"><TrashIcon /></IconButton>
+// ★ [変更] propsに `isOpen` と `onClose` を追加して、モバイルでの表示制御を行う
+const Sidebar = ({ isOpen, onClose, thesisTitle, onThesisTitleChange, chapters, selected, onNavigate, onAddChapter, onAddSection, onDeleteChapter, onDeleteSection, onSubmit, onOpenTodo, onOpenImagePlan }) => (
+  <>
+    {/* ★ [変更] モバイル表示時にサイドバーの外側をクリックしたときに閉じるためのオーバーレイ */}
+    <div
+      className={`fixed inset-0 bg-black/50 z-20 lg:hidden transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      onClick={onClose}
+    />
+
+    {/* aside本体のz-indexを z-50 から z-30 に変更 */}
+    <aside className={`
+      fixed lg:static inset-y-0 left-0 z-30
+      w-full max-w-xs h-screen flex flex-col
+      bg-gray-100 border-r p-4 pt-16 lg:pt-24
+      transform transition-transform duration-300 ease-in-out
+      lg:w-1/4 lg:translate-x-0
+      ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+    `}>
+      {/* ★ [変更] モバイル用の閉じるボタン */}
+      <button onClick={onClose} aria-label="メニューを閉じる" className="lg:hidden absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-800">
+        <CloseIcon />
+      </button>
+
+      <div className='flex-shrink-0 z-30'>
+        <h2 className="font-bold mb-2">論文タイトル</h2>
+        <input
+          type="text"
+          className="w-full p-2 rounded-md border border-gray-300"
+          value={thesisTitle}
+          onChange={(e) => onThesisTitleChange(e.target.value)}
+          placeholder="論文タイトルを入力..."
+        />
+      </div>
+      <div className="flex-grow overflow-y-auto pr-2 mt-4 pt-4 border-t">
+        <h2 className="font-bold mb-4 flex-shrink-0">論文構成</h2>
+        {chapters.map((chapter, chapterIndex) => (
+          <div key={chapterIndex} className="mb-4">
+            <div className="flex items-center justify-between">
+              <button className={`flex-grow text-left px-2 py-1 rounded h-[25px] flex items-center overflow-hidden ${selected?.type === 'chapter' && selected.chapterIndex === chapterIndex ? 'bg-blue-200' : 'hover:bg-gray-200'}`} onClick={() => { onNavigate(chapterIndex); onClose(); }}>第{chapterIndex + 1}章 {chapter.title}</button>
+              <IconButton onClick={() => onDeleteChapter(chapterIndex)} aria-label="章を削除"><TrashIcon /></IconButton>
+            </div>
+            <div className="ml-4">
+              {chapter.sections.map((section, sectionIndex) => (
+                <div key={sectionIndex} className="flex items-center justify-between">
+                  <button className={`flex-grow text-left px-2 py-1 rounded text-sm h-[25px] overflow-hidden ${selected?.type === 'section' && selected.chapterIndex === chapterIndex && selected.sectionIndex === sectionIndex ? 'bg-blue-100' : 'hover:bg-gray-200'}`} onClick={() => { onNavigate(chapterIndex, sectionIndex); onClose(); }}>{chapterIndex + 1}.{sectionIndex + 1} {section}</button>
+                  <IconButton onClick={() => onDeleteSection(chapterIndex, sectionIndex)} aria-label="節を削除"><TrashIcon /></IconButton>
+                </div>
+              ))}
+              <div className="mt-2 flex items-center justify-end space-x-2">
+                <ActionButton onClick={() => onAddChapter(chapterIndex + 1)}>章を追加</ActionButton>
+                <ActionButton onClick={() => onAddSection(chapterIndex)}>節を追加</ActionButton>
               </div>
-            ))}
-            <div className="mt-2 flex items-center justify-end space-x-2">
-              <ActionButton onClick={() => onAddChapter(chapterIndex + 1)}>章を追加</ActionButton>
-              <ActionButton onClick={() => onAddSection(chapterIndex)}>節を追加</ActionButton>
             </div>
           </div>
+        ))}
+        <div className="mt-4 pt-4 border-t border-gray-300">
+          <button className={`w-full text-left px-2 py-1 rounded font-semibold ${selected?.type === 'references' ? 'bg-blue-200' : 'hover:bg-gray-200'}`} onClick={() => { onNavigate(null, null, 'references'); onClose(); }}>参考文献</button>
         </div>
-      ))}
-      <div className="mt-4 pt-4 border-t border-gray-300">
-        <button className={`w-full text-left px-2 py-1 rounded font-semibold ${selected?.type === 'references' ? 'bg-blue-200' : 'hover:bg-gray-200'}`} onClick={() => onNavigate(null, null, 'references')}>参考文献</button>
       </div>
-    </div>
-    <div className="flex-shrink-0 pt-4 border-t border-gray-200 space-y-2">
-      <button onClick={onOpenTodo} className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-50 border transition-colors"><ChecklistIcon /> To-doリスト</button>
-      <button onClick={onOpenImagePlan} className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-50 border transition-colors"><ImageIcon /> 挿入計画リスト</button>
-      <button onClick={onSubmit} className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-green-100 text-green-700 font-semibold rounded-lg shadow-sm hover:bg-green-200 transition-colors"><SendIcon /> 論文を保存する</button>
-    </div>
-  </div>
+      <div className="flex-shrink-0 pt-4 border-t border-gray-200 space-y-2">
+        <button onClick={onOpenTodo} className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-50 border transition-colors"><ChecklistIcon /> To-doリスト</button>
+        <button onClick={onOpenImagePlan} className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white text-gray-700 font-semibold rounded-lg shadow-sm hover:bg-gray-50 border transition-colors"><ImageIcon /> 挿入計画リスト</button>
+        <button onClick={onSubmit} className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-green-100 text-green-700 font-semibold rounded-lg shadow-sm hover:bg-green-200 transition-colors"><SendIcon /> 論文を保存する</button>
+      </div>
+    </aside>
+  </>
 );
 const EditorPanel = ({ chapters, references, onInputChange, onDescriptionChange, onReferencesChange }) => (
-  <div className="flex-1 p-8 overflow-y-auto pt-24">
+  <div className="flex-1 p-4 sm:p-8 overflow-y-auto pt-24 mt-12">
     {chapters.map((chapter, chapterIndex) => (
       <div key={chapterIndex} id={`chapter-${chapterIndex}`} className="mb-10 scroll-mt-24">
         <div className="flex items-center w-full p-4 mb-2 rounded-lg bg-white hover:bg-gray-100 focus-within:bg-gray-50 transition-colors duration-200">
-          <span className="text-2xl font-bold text-gray-500 mr-2">第{chapterIndex + 1}章</span>
+          <span className="w-[100px] text-2xl font-bold text-gray-500 mr-2">第{chapterIndex + 1}章</span>
           <input type="text" className="w-full text-2xl font-bold bg-transparent focus:outline-none" placeholder="章のタイトル" value={chapter.title} onChange={(e) => onInputChange(chapterIndex, null, e.target.value)} />
         </div>
         <AutoSizingTextarea className="w-full p-4 mb-6 resize-none rounded-lg bg-white hover:bg-gray-100 focus-within:bg-gray-50 transition-colors duration-200" placeholder="章の説明文を入力" value={chapter.description} onChange={(e) => onDescriptionChange(chapterIndex, null, e.target.value)} minRows={3} />
         {chapter.sections.map((section, sectionIndex) => (
-          <div key={sectionIndex} id={`section-${chapterIndex}-${sectionIndex}`} className="ml-8 mb-6 scroll-mt-24">
+          <div key={sectionIndex} id={`section-${chapterIndex}-${sectionIndex}`} className="mb-6 scroll-mt-24">
             <div className="flex items-center w-full p-4 mb-2 rounded-lg bg-white hover:bg-gray-100 focus-within:bg-gray-50 transition-colors duration-200">
-              <span className="text-lg font-semibold text-gray-500 mr-2">{chapterIndex + 1}.{sectionIndex + 1}</span>
+              <span className="w-[50px] text-lg font-semibold text-gray-500 mr-2">{chapterIndex + 1}.{sectionIndex + 1}</span>
               <input type="text" className="w-full text-lg font-semibold bg-transparent focus:outline-none" placeholder="節のタイトル" value={section} onChange={(e) => onInputChange(chapterIndex, sectionIndex, e.target.value)} />
             </div>
             <AutoSizingTextarea className="w-full p-4 resize-none rounded-lg bg-white hover:bg-gray-100 focus-within:bg-gray-50 transition-colors duration-200" placeholder="節の説明文を入力" value={chapter.sectionDescriptions[sectionIndex]} onChange={(e) => onDescriptionChange(chapterIndex, sectionIndex, e.target.value)} minRows={5} />
@@ -177,14 +194,16 @@ const EditorPanel = ({ chapters, references, onInputChange, onDescriptionChange,
 // --- Main App Component ---
 export default function ThesisEditor() {
   const router = useRouter()
-  const [thesisTitle, setThesisTitle] = useState('腸内環境を測定するカプセルデバイス');
-  const [chapters, setChapters] = useState([{ title: 'はじめに', description: 'ここに「はじめに」の概要を記述します。', sections: ['概要'], sectionDescriptions: ['研究の背景と目的について述べます。'] }, { title: '実験方法', description: '本研究で用いた実験方法について詳述します。', sections: ['材料', '装置'], sectionDescriptions: ['使用した試薬やサンプルについて記述します。', '使用した測定装置のモデル名や設定について記述します。'] }, { title: '結果と考察', description: '', sections: [], sectionDescriptions: [] }, { title: '結論', description: '', sections: [], sectionDescriptions: [] }, { title: '謝辞', description: '', sections: [], sectionDescriptions: [] },]);
+  const [thesisTitle, setThesisTitle] = useState('卒業論文テーマ');
+  const [chapters, setChapters] = useState([{ title: '序論', description: 'ここに「序論」の概要を記述します。', sections: ['研究背景', "研究目的"], sectionDescriptions: ['研究背景について述べます。', "研究目的について述べます。"] }, { title: '実験方法', description: '本研究で用いた実験方法について詳述します。', sections: ['材料', '装置'], sectionDescriptions: ['使用した試薬やサンプルについて記述します。', '使用した測定装置のモデル名や設定について記述します。'] }, { title: '結果と考察', description: '', sections: [], sectionDescriptions: [] }, { title: '結論', description: '', sections: [], sectionDescriptions: [] }, { title: '謝辞', description: '', sections: [], sectionDescriptions: [] },]);
   const [references, setReferences] = useState('1. Author, A. A. (2025). ...');
   const [selected, setSelected] = useState(null);
   const [isTodoModalOpen, setIsTodoModalOpen] = useState(false);
   const [todoText, setTodoText] = useState('');
   const [isImagePlanModalOpen, setIsImagePlanModalOpen] = useState(false);
   const [imagePlanList, setImagePlanList] = useState([{ id: 1, done: false, location: '1-0', description: '実験装置の全体図' }, { id: 2, done: true, location: '2-1', description: '結果を示すグラフ' },]);
+  // ★ [変更] サイドバーの開閉状態を管理するstate
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // --- Handlers ---
   const handleInputChange = (chapterIndex, sectionIndex, value) => { setChapters(prev => { const newChapters = JSON.parse(JSON.stringify(prev)); if (sectionIndex === null) { newChapters[chapterIndex].title = value; } else { newChapters[chapterIndex].sections[sectionIndex] = value; } return newChapters; }); };
@@ -196,36 +215,13 @@ export default function ThesisEditor() {
   const handleNavigation = (chapterIndex, sectionIndex = null, specialSection = null) => { let elementId; if (specialSection) { setSelected({ type: specialSection }); elementId = specialSection; } else if (sectionIndex === null) { setSelected({ type: 'chapter', chapterIndex }); elementId = `chapter-${chapterIndex}`; } else { setSelected({ type: 'section', chapterIndex, sectionIndex }); elementId = `section-${chapterIndex}-${sectionIndex}`; } const element = document.getElementById(elementId); if (element) { element.scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
 
   const handleSubmit = async () => {
-    const chaptersForApi = chapters.map((chapter) => ({
-      title: chapter.title,
-      description: chapter.description,
-      progress: 0,
-      sections: chapter.sections.map((sectionTitle, index) => ({
-        title: sectionTitle,
-        description: chapter.sectionDescriptions[index] || '',
-      })),
-    }));
+    const chaptersForApi = chapters.map((chapter) => ({ title: chapter.title, description: chapter.description, progress: 0, sections: chapter.sections.map((sectionTitle, index) => ({ title: sectionTitle, description: chapter.sectionDescriptions[index] || '', })), }));
+    const referencesForApi = references.split('\n').filter(line => line.trim() !== '').map(line => ({ title: line, url: '', }));
 
-    const referencesForApi = references.split('\n').filter(line => line.trim() !== '').map(line => ({
-      title: line,
-      url: '',
-    }));
-
-    // ★★★ 送信データに全てのstateを含める ★★★
-    const thesisData = {
-      title: thesisTitle,
-      chapters: chaptersForApi,
-      references: referencesForApi,
-      todoText: todoText,
-      imagePlanList: imagePlanList,
-    };
+    const thesisData = { title: thesisTitle, chapters: chaptersForApi, references: referencesForApi, todoText: todoText, imagePlanList: imagePlanList, };
 
     try {
-      const res = await fetch('/api/thesis/new', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(thesisData),
-      });
+      const res = await fetch('/api/thesis/new', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(thesisData), });
       const data = await res.json();
       console.log('保存結果:', data);
 
@@ -242,8 +238,20 @@ export default function ThesisEditor() {
   };
 
   return (
-    <div className="flex w-full h-screen">
+    // ★ [変更] flex-col lg:flex-row で画面サイズに応じてレイアウトを切り替える
+    <div className="flex flex-col lg:flex-row w-full h-screen bg-gray-50">
+      {/* ★ [変更] モバイル用のハンバーガーメニューボタン */}
+      <button
+        onClick={() => setIsSidebarOpen(true)}
+        aria-label="メニューを開く"
+        className="lg:hidden fixed top-4 left-4 z-30 p-2 bg-white rounded-full shadow-md text-gray-700"
+      >
+        <MenuIcon />
+      </button>
+
       <Sidebar
+        isOpen={isSidebarOpen} // ★ [変更] stateをpropsで渡す
+        onClose={() => setIsSidebarOpen(false)} // ★ [変更] 閉じる関数をpropsで渡す
         thesisTitle={thesisTitle}
         onThesisTitleChange={setThesisTitle}
         chapters={chapters}
@@ -257,13 +265,17 @@ export default function ThesisEditor() {
         onOpenTodo={() => setIsTodoModalOpen(true)}
         onOpenImagePlan={() => setIsImagePlanModalOpen(true)}
       />
-      <EditorPanel
-        chapters={chapters}
-        references={references}
-        onInputChange={handleInputChange}
-        onDescriptionChange={handleDescriptionChange}
-        onReferencesChange={setReferences}
-      />
+      {/* ★ [変更] EditorPanelをmainタグで囲み、レイアウトの主体とする */}
+      <main className="w-full flex-1 h-screen overflow-y-auto">
+        <EditorPanel
+          chapters={chapters}
+          references={references}
+          onInputChange={handleInputChange}
+          onDescriptionChange={handleDescriptionChange}
+          onReferencesChange={setReferences}
+        />
+      </main>
+
       <TodoModal
         isOpen={isTodoModalOpen}
         onClose={() => setIsTodoModalOpen(false)}
